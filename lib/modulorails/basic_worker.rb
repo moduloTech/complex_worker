@@ -20,6 +20,8 @@ module Modulorails
       attr_reader :required_attributes
       # reader for optional attributes
       attr_reader :optional_attributes
+      # reader for skipped attributes
+      attr_reader :skipped_attributes
 
       # allow workers to declare what attributes they need
       def require_attributes(*attributes, optional: false)
@@ -28,6 +30,11 @@ module Modulorails
         else
           @required_attributes = attributes
         end
+      end
+
+      # allow to skip nested required attributes
+      def skip_attributes(*attributes)
+        @skipped_attributes = attributes
       end
 
       # helper for processing entry point that returns call result
@@ -57,8 +64,11 @@ module Modulorails
       # collect arguments
       @options = options
       # init attributes
+      @loaded_attributes = Set.new
+      init_skip_attributes!
       init_attributes!
       init_optional_attributes!
+      @loaded_attributes = nil
 
       run_callbacks :initialize
     end
@@ -129,33 +139,33 @@ module Modulorails
 
     # initialize required_attributes
     def init_attributes!
-      init_attributes_loop(:required_attributes, false)
+      iterate_classes do |target|
+        init_attributes(target.required_attributes, false)
+      end
     end
 
     # initialize optional_attributes
     def init_optional_attributes!
-      init_attributes_loop(:optional_attributes, true)
+      iterate_classes do |target|
+        init_attributes(target.optional_attributes, true)
+      end
     end
 
-    # allow to inherit attributes from parent classes
-    def init_attributes_loop(method_name, optional)
-      # start from current class
-      target = self.class
-      loop do
-        # init attributes for target class
-        init_attributes(target.send(method_name), optional)
-        # take target's superclass
-        target = target.superclass
-        # break loop if target is BasicWorker - root worker class
-        break if target == BasicWorker
+    # init skipped attributes from all parent classes
+    def init_skip_attributes!
+      skipped_attributes = Set.new
+      iterate_classes do |target|
+        skipped_attributes += target.skipped_attributes || []
       end
+      @loaded_attributes += skipped_attributes
     end
 
     def init_attributes(attrs, optional)
       # leave if there are none
       return unless attrs
 
-      attrs.each do |attr|
+      new_attributes = attrs.to_set - @loaded_attributes
+      new_attributes.each do |attr|
         # :result attribute is used for ::call_self, so we don't allow
         # to require this attribute from the outside
         raise(ArgumentError, ':result attribute is reserved') if attr.to_sym == :result
@@ -171,6 +181,22 @@ module Modulorails
         self.class.module_eval do
           protected; attr_reader(attr) # rubocop:disable all
         end
+      end
+
+      @loaded_attributes += new_attributes
+    end
+
+    def iterate_classes
+      # start from current class
+      target = self.class
+      loop do
+        # yield class
+        yield target
+
+        # take target's superclass
+        target = target.superclass
+        # break loop if target is BasicWorker - root worker class
+        break if target == BasicWorker
       end
     end
 

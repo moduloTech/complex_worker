@@ -92,20 +92,45 @@ RSpec.describe Modulorails::BasicWorker do
     context 'when child class adds new attributes' do
       let(:optkeys) { %i[a b c d x y] }
 
-      subject do
+      let(:nested_class) do
         Class.new(base_class) {
           attr_reader :x, :y
 
           require_attributes :x
           require_attributes :y, optional: true
-        }.call(options)
+        }
       end
+
+      subject { nested_class.call(options) }
 
       it { is_expected.to respond_to(*optkeys) }
 
       it 'initializes both parent and child attributes' do
         expect(subject.x).to eq 5
         expect(subject.y).to eq 6
+      end
+
+      context 'when some attributes are skipped' do
+        let(:optkeys) { %i[b c d] }
+
+        subject do
+          Class.new(nested_class) do
+            skip_attributes :x, :y, :a
+          end.call(options)
+        end
+
+        it 'not raises' do
+          expect { subject }.not_to raise_exception
+        end
+
+        it 'initializes other attributes' do
+          expect(subject.a).to be_nil
+          expect(subject.x).to be_nil
+          expect(subject.y).to be_nil
+          expect(subject.b).to eq 1
+          expect(subject.c).to eq 2
+          expect(subject.d).to eq 3
+        end
       end
     end
   end
