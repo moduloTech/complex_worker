@@ -1,0 +1,3 @@
+en:
+  action_member:
+    not_found: '%{model}(%{id}) was not found.'

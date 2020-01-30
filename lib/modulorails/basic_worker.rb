@@ -2,6 +2,7 @@
 
 require 'active_support/callbacks'
 require 'active_support/core_ext/object/blank'
+require 'active_support/core_ext/object/deep_dup'
 
 module Modulorails
 

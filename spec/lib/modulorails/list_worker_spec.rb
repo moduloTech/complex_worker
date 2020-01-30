@@ -8,9 +8,7 @@ RSpec.describe Modulorails::ListWorker do
 
   let(:klass) do
     Class.new(described_class) {
-      def model
-        FakeUser
-      end
+      model FakeUser
     }
   end
 
@@ -107,9 +105,7 @@ RSpec.describe Modulorails::ListWorker do
 
     subject do
       Class.new(described_class) {
-        def model
-          FakeUser
-        end
+        model FakeUser
       }.find(condition)
     end
 

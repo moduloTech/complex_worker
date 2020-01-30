@@ -19,6 +19,9 @@ module Modulorails
     class << self
 
       # method to find item with relation by id or condition appending the filter
+      # @param [String, Integer, Hash] id_or_condition - id or hash condition
+      # @param [Hash] options - options required by finder instance to initialize
+      # @return [ActiveRecord::Base, NilClass]
       def find(id_or_condition, **options)
         # apply options, but override pagination and order skips to be set
         list = call(**options, skip_pagination: true, skip_order: true)
@@ -26,6 +29,18 @@ module Modulorails
         condition = id_or_condition.is_a?(Hash) ? id_or_condition : { id: id_or_condition }
         # retrieve first record by condition
         list.relation.find_by(condition)
+      end
+
+      # model we build this list for
+      # @param [Class<ActiveRecord::Base>] set_model - used for assigning model
+      # @return [Class<ActiveRecord::Base>]
+      def model(set_model=nil)
+        # set model if argument is given
+        return @model = set_model if set_model
+
+        @model || # return model
+          superclass.respond_to?(:model) && model(superclass.model) || # or parent model
+          raise(NotImplementedError) # or raise
       end
 
     end
@@ -53,6 +68,7 @@ module Modulorails
     attr_reader :relation
 
     # worker entry
+    # @return [Modulorails::ListWorker]
     def call
       # prepare the relation
       prepare_relation!
@@ -69,6 +85,8 @@ module Modulorails
 
     protected
 
+    # helper to call class methods
+    delegate :model, to: :class
     # helper to get arel_table from the model
     delegate :arel_table, to: :model
 
@@ -77,12 +95,8 @@ module Modulorails
     def prepare_relation!
     end
 
-    # this method should be overrode
-    def model
-      raise NotImplementedError
-    end
-
     # default permitted keys for filter hash
+    # @return [Array<String, Symbol>]
     def permitted_filter_keys
       %i[id]
     end
@@ -105,6 +119,7 @@ module Modulorails
     end
 
     # model to use for relation sort
+    # @return [Class<ActiveRecord::Base>]
     def order_model
       # use model by default
       model
@@ -123,6 +138,7 @@ module Modulorails
     private
 
     # check if order is descending
+    # @return [Boolean]
     def reverse_order?
       order_direction.to_s == ORDER_DESC
     end

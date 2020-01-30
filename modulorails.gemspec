@@ -29,8 +29,8 @@ Gem::Specification.new do |spec|
   end
 
   spec.files = Dir[
-    'lib}/**/*',
-    'CHANGELOG.md', 'LICENSE.txt', 'README.md',
+    'lib/**/*', 'config/locales/*',
+    'CHANGELOG.md', 'LICENSE.txt', 'README.md'
   ]
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
