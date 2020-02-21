@@ -3,7 +3,6 @@
 require 'modulorails/basic_worker'
 require 'action_controller/metal/strong_parameters'
 
-# Author: varaby_m@modulotech.fr
 RSpec.describe Modulorails::BasicWorker do
   describe '#initialize' do
     it 'raises' do

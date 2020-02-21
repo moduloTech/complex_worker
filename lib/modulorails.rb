@@ -4,6 +4,7 @@ require 'modulorails/version'
 
 require 'modulorails/basic_worker'
 require 'modulorails/list_worker'
+require 'modulorails/complex_worker'
 
 module Modulorails
 

@@ -100,8 +100,8 @@ module Modulorails
     # even when @errors are present but :result.errors are blank
     # it means the success? would be true
     def errors
-      # if result is instantiated and responds to "errors" (ActiveModel-like)
-      if result.respond_to?(:errors)
+      # if errors array is not defined and result responds to "errors" (ActiveModel-like)
+      if @errors.nil? && result.respond_to?(:errors)
         # return all errors array
         result.errors.full_messages
       # in other cases

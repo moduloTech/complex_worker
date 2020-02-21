@@ -2,7 +2,6 @@
 
 require 'modulorails/list_worker'
 
-# Author: varaby_m@modulotech.fr
 RSpec.describe Modulorails::ListWorker do
   let(:options) { {} }
 

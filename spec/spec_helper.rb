@@ -17,5 +17,7 @@ RSpec.configure do |config|
   ActiveRecord::Schema.verbose = false
   load File.expand_path('../spec/support/fake_schema.rb', __dir__)
 
-  FakeUser = Class.new(ActiveRecord::Base)
+  FakeUser = Class.new(ActiveRecord::Base) do
+    validates :email, presence: true
+  end
 end
