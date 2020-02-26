@@ -78,11 +78,8 @@ module Modulorails
       return true if condition.blank?
 
       statement, proc = condition.to_a.first
-      reverse = statement == :unless
       proc = method(proc) if proc.is_a?(Symbol) || proc.is_a?(String)
-      result = proc.call(self, options)
-      result = !result if reverse
-      result
+      !!proc.call(self, options) ^ (statement == :unless) # rubocop:disable Style/DoubleNegation
     end
 
   end
