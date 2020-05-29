@@ -114,9 +114,9 @@ RSpec.describe Modulorails::BasicWorker do
         let(:optkeys) { %i[b c d] }
 
         subject do
-          Class.new(nested_class) do
+          Class.new(nested_class) {
             skip_attributes :x, :y, :a
-          end.call(options)
+          }.call(options)
         end
 
         it 'not raises' do
